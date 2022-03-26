@@ -1,23 +1,66 @@
-import pygame #파이 게임 모듈 임포트
+''' 
+자료형
 
-pygame.init() #파이 게임 초기화
-screen = pygame.display.set_mode((1920, 1080)) #화면 크기 설정
-clock = pygame.time.Clock() 
+int     정수
+float   실수
+str     문자열
+bool    참과 거짓
+list    배열
+tuple   배열(수정 불가능)
+ndarray 행렬
 
-#변수
+type(조사하고 픈 자료형) 자료형이 나옴
 
-while True: #게임 루프
-    screen.fill((0, 0, 0)) #단색으로 채워 화면 지우기
+------------------------------------
 
-    #변수 업데이트
+문자열 수치 함께 표시
 
-    event = pygame.event.poll() #이벤트 처리
-    if event.type == pygame.QUIT:
-        break
+print('A = {0} kg B = {1} kg'. format(x, y))
+-> A = x kg B = y kg
 
-    #화면 그리기
+------------------------------------
 
-    pygame.display.update() #모든 화면 그리기 업데이트
-    clock.tick(30) #30 FPS (초당 프레임 수) 를 위한 딜레이 추가, 딜레이 시간이 아닌 목표로 하는 FPS 값
+list 길이
 
-pygame.quit()  
+len(list name)
+
+------------------------------------
+
+연속된 정수 데이터 작성
+
+range(Start Number, End Number + 1)
+
+ex) 2 ~ 5
+    ran = range(2, 6)
+
+range 형은 list 형과 같은 방법으로 요소를 참조할 수 있지만 요소를 수정할 수는 없다
+range에 y[2] = 2 라는 명령을 내리면 오류가 난다
+시작 숫자를 생략하고 range(EndNumber + 1)를 입력하면 0부터 시작되는 수열이 만들어진다
+
+------------------------------------
+
+tuple의 이용
+
+a = (1, 2, 3)
+
+참조는 list 형과 같은 방식을 사용
+
+길이가 1인 tuple은 a = (1, ) 와 같이 사용한다
+
+------------------------------------
+
+if x > 10 :
+
+else :
+와 같이 사용
+
+조건을 동시에 사용해야할 경우 and와 or을 사용한다
+
+------------------------------------
+
+
+'''
+
+q = 1
+
+print(q)
