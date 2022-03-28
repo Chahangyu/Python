@@ -608,38 +608,73 @@ plt.ylabel('$ x_1 $', fontsize = 14)
 
 plt.show()
 
-'''
+------------------------------------
 
-from matplotlib import projections
+머신러닝에 필요한 수학 skip
+
+------------------------------------
+
+1차원 입력 직선 모델
+
 import numpy as np
 import matplotlib.pyplot as plt
-from pyparsing import col
 
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
 
-def f(x0, x1) : 
-   r = (2 * (x0 ** 2)) + (x1 ** 2)
-   ans = r * np.exp(-r)
-   return ans
+print(np.round(X, 2), '\n')
+print(np.round(T, 2))
 
-xn = 9
-x0 = np.linspace(-2, 2, xn)
-x1 = np.linspace(-2, 2, xn)
+[15.43 23.01  5.   12.56  8.67  7.31  9.66 13.64 14.92 18.47 15.48 22.13
+ 10.11 26.95  5.68 21.76] 
 
-y = np.zeros((len(x0), len(x1)))
+[170.91 160.68 129.   159.7  155.46 140.56 153.65 159.43 164.7  169.65
+ 160.71 173.29 159.31 171.52 138.96 165.87]
 
-for i0 in range(xn) :
-   for i1 in range(xn) :
-      y[i1, i0] = f(x0[i0], x1[i1])
+------------------------------------
 
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+import matplotlib.pyplot as plt
 
-xx0, xx1 = np.meshgrid(x0, x1) # meshgrid(메쉬 그리드) : 벡터 x 및 y에 포함된 좌표를 바탕으로 2차원 그리드 좌표를 반환합니다
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
 
-plt.figure(figsize = (5, 3.5))
-ax = plt.subplot(1, 1, 1, projection = '3d')
-ax.plot_surface(xx0, xx1, y, rstride = 1, cstride = 1, alpha = 0.3, color = 'blue', edgecolor = 'black')
-ax.set_zticks((0, 0.2))
-ax.view_init(90, -95)
+plt.figure(figsize = (4, 4))
+plt.plot(X, T, marker = 'o', linestyle = 'None', markeredgecolor = 'black', color = 'cornflowerblue')
+plt.xlim(X_min, X_max)
+plt.grid(True)
 
 plt.show()
 
+'''
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
+
+plt.figure(figsize = (4, 4))
+plt.plot(X, T, marker = 'o', linestyle = 'None', markeredgecolor = 'black', color = 'cornflowerblue')
+plt.xlim(X_min, X_max)
+plt.grid(True)
+
+plt.show()
