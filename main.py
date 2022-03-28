@@ -473,28 +473,173 @@ print(matplotlib.colors.cnames)
 plt.subplot(n1, n2, n)를 사용하여 전체를 세로 n1, 가로 n2로 나눈 n번째에 그래프가 그려집니다
 plt.subplot의 n은 특별하게도 0이 아닌 1부터 시작하므로 주의, 0을 지정하면 오류가 발생한다
 
-
-'''
-
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
-print(matplotlib.colors.cnames)
 
-# def f(x, w) : 
-#    return (x - w) * x * (x + 2)
+def f(x, w) : 
+   return (x - w) * x * (x + 2)
 
-# x = np.linspace(-3, 3, 100)
+x = np.linspace(-3, 3, 100)
 
-# plt.plot(x, f(x, 2), color = 'black', label = '$ w = 2 $')
-# plt.plot(x, f(x, 1), color = 'cornflowerblue', label = '$ w = 1 $')
+plt.figure(figsize = (10, 3)) # 전체 영역의 크기 지정
+plt.subplots_adjust(wspace = 0.5, hspace = 0.5) # 그래프 간격을 지정 w = 좌우 간격, h = 상하 간격
 
-# plt.legend(loc = "upper left")   # 범례 표시
-# plt.ylim(-15, 15)                # y축 범위
-# plt.title('$ f(x) $')            # 제목
-# plt.xlabel('$ x $')              # x 라벨
-# plt.ylabel('$ y $')              # y 라벨
-# plt.grid(True)                   # 그리드
+for i in range(6) : 
+   plt.subplot(2, 3, i + 1)
+   plt.title(i + 1)
+   plt.plot(x, f(x, i), 'k')
+   plt.ylim(-20, 20)
+   plt.grid(True)
 
-# plt.show()
+plt.show()
+
+------------------------------------
+
+이변수 함수
+
+f(x0, x1) = (2 x 0^2) exp (-(2 x 0^2 + x1^2))
+
+def f(x0, x1) : 
+   r = (2 * (x0 ** 2)) + (x1 ** 2)
+   ans = r * np.exp(-r)
+   return ans
+
+xn = 9
+x0 = np.linspace(-2, 2, xn)
+x1 = np.linspace(-2, 2, xn)
+
+y = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) :
+   for i1 in range(xn) :
+      y[i1, i0] = f(x0[i0], x1[i1])
+
+print(x0)
+print(np.round(y, 1))
+
+[-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+[[0.  0.  0.  0.  0.1 0.  0.  0.  0. ]
+ [0.  0.  0.1 0.2 0.2 0.2 0.1 0.  0. ]
+ [0.  0.  0.1 0.3 0.4 0.3 0.1 0.  0. ]
+ [0.  0.  0.2 0.4 0.2 0.4 0.2 0.  0. ]
+ [0.  0.  0.3 0.3 0.  0.3 0.3 0.  0. ]
+ [0.  0.  0.2 0.4 0.2 0.4 0.2 0.  0. ]
+ [0.  0.  0.1 0.3 0.4 0.3 0.1 0.  0. ]
+ [0.  0.  0.1 0.2 0.2 0.2 0.1 0.  0. ]
+ [0.  0.  0.  0.  0.1 0.  0.  0.  0. ]]
+
+------------------------------------
+
+수치를 색으로 표현하기 : pcolor
+
+plt.figure(figsize = (3.5, 3))
+plt.gray()
+plt.pcolor(y)
+plt.colorbar()
+
+plt.show()
+
+------------------------------------
+
+함수를 표면에 표시 : surface
+
+from mpl_toolkits.mplot3d import Axes3D
+
+xx0, xx1 = np.meshgrid(x0, x1) # meshgrid(메쉬 그리드) : 벡터 x 및 y에 포함된 좌표를 바탕으로 2차원 그리드 좌표를 반환합니다
+
+plt.figure(figsize = (5, 3.5))
+ax = plt.subplot(1, 1, 1, projection = '3d')
+ax.plot_surface(xx0, xx1, y, rstride = 1, cstride = 1, alpha = 0.3, color = 'blue', edgecolor = 'black')
+ax.set_zticks((0, 0.2))
+ax.view_init(75, -95)
+
+plt.show()
+
+
+surface를 표시하는 부분은 ax.plot_surface 입니다
+옵션 rstride와 cstride에 자연수를 부여해 가로 및 세로로 몇 개의 선을 긋는지 지정할 수 있습니다
+수가 적을수록 선의 간격이 조밀해집니다
+alpha는 면의 투명도를 지정하는 옵션입니다 0과 1 사이의 실수로 면의 투명도를 지정하며 1에 가까울수록 불투명해집니다
+
+print(x0)
+print(x1)
+
+print(xx0)
+print(xx1)
+
+[-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+
+[-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+
+[[-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]
+ [-2.  -1.5 -1.  -0.5  0.   0.5  1.   1.5  2. ]]
+
+[[-2.  -2.  -2.  -2.  -2.  -2.  -2.  -2.  -2. ]
+ [-1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5 -1.5]
+ [-1.  -1.  -1.  -1.  -1.  -1.  -1.  -1.  -1. ]
+ [-0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5]
+ [ 0.   0.   0.   0.   0.   0.   0.   0.   0. ]
+ [ 0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5]
+ [ 1.   1.   1.   1.   1.   1.   1.   1.   1. ]
+ [ 1.5  1.5  1.5  1.5  1.5  1.5  1.5  1.5  1.5]
+ [ 2.   2.   2.   2.   2.   2.   2.   2.   2. ]]
+
+------------------------------------
+
+등고이선으로 표시 : contour
+
+xx0, xx1 = np.meshgrid(x0, x1) # meshgrid(메쉬 그리드) : 벡터 x 및 y에 포함된 좌표를 바탕으로 2차원 그리드 좌표를 반환합니다
+
+plt.figure(1, figsize = (4, 4))
+
+cont = plt.contour(xx0, xx1, y, 5, colos = 'black')
+cont.clabel(fmt = '%3.2f', fontsize = 8)
+
+plt.xlabel('$ x_0 $', fontsize = 14)
+plt.ylabel('$ x_1 $', fontsize = 14)
+
+plt.show()
+
+'''
+
+from matplotlib import projections
+import numpy as np
+import matplotlib.pyplot as plt
+from pyparsing import col
+
+
+def f(x0, x1) : 
+   r = (2 * (x0 ** 2)) + (x1 ** 2)
+   ans = r * np.exp(-r)
+   return ans
+
+xn = 9
+x0 = np.linspace(-2, 2, xn)
+x1 = np.linspace(-2, 2, xn)
+
+y = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) :
+   for i1 in range(xn) :
+      y[i1, i0] = f(x0[i0], x1[i1])
+
+from mpl_toolkits.mplot3d import Axes3D
+
+xx0, xx1 = np.meshgrid(x0, x1) # meshgrid(메쉬 그리드) : 벡터 x 및 y에 포함된 좌표를 바탕으로 2차원 그리드 좌표를 반환합니다
+
+plt.figure(figsize = (5, 3.5))
+ax = plt.subplot(1, 1, 1, projection = '3d')
+ax.plot_surface(xx0, xx1, y, rstride = 1, cstride = 1, alpha = 0.3, color = 'blue', edgecolor = 'black')
+ax.set_zticks((0, 0.2))
+ax.view_init(90, -95)
+
+plt.show()
 
