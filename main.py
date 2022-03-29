@@ -658,10 +658,26 @@ plt.grid(True)
 
 plt.show()
 
-'''
+------------------------------------
+
+제곱의 오차 함수
+
+제곱의 오차 함수식
+https://url.kr/iadxz9
+
+yn은 직선 모델에 xn을 넣었을 때의 출력을 나타낸다
+yn = y(xn) = w0xn + w1
+J는 평균 제곱의 오차로 위 링크와 같이 직선과 데이터 점의 차의 제곱의 평균이다
+오차의 크기가 N에 의존하지 않는 평균 제곱 오차를 사용해 진행
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def mse_line(x, t, w) :
+    y = w[0] * x + w[1]
+    mse = np.mean((y - t) ** 2)
+    return mse
 
 np.random.seed(seed = 1)
 X_min = 4   # X의 하한
@@ -672,9 +688,253 @@ Prm_c = [170, 108, 0.2] # 생성 매개 변수
 T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
 np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
 
-plt.figure(figsize = (4, 4))
-plt.plot(X, T, marker = 'o', linestyle = 'None', markeredgecolor = 'black', color = 'cornflowerblue')
-plt.xlim(X_min, X_max)
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) : 
+    for i1 in range(xn) :
+        J[i1, i0] = mse_line(X, T, (x0[i0], x1[i1]))
+
+plt.figure(figsize = (9.5, 4))
+plt.subplots_adjust(wspace = 0.5)
+
+ax = plt.subplot(1, 2, 1, projection = '3d')
+ax.plot_surface(xx0, xx1, J, rstride = 10, cstride = 10, alpha = 0.3, color = 'blue', edgecolor = 'black')
+ax.set_xticks([-20, 0, 20])
+ax.set_yticks([120, 140, 160])
+ax.view_init(20, -60)
+
+plt.subplot(1, 2, 2)
+cont = plt.contour(xx0, xx1, J, 30, color = 'black', levels = [100, 1000, 10000, 100000])
+cont.clabel(fmt = '% 1.0f', fontsize = 8)
 plt.grid(True)
 
 plt.show()
+
+------------------------------------
+
+w = [10, 165] 의 기울기
+
+def dmse_line(x, t, w) :
+   y = w[0] * x + w[1]
+   d_w0 = 2 * np.mean((y - t) * x)
+   d_w1 = 2 * np.mean(y - t)
+   return d_w0, d_w1
+
+
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
+
+d_w = dmse_line(X, T, [10, 165])
+print(np.round(d_w, 1)) # [5046.3  301.8]
+
+------------------------------------
+
+경사 하강법
+
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def mse_line(x, t, w) :
+    y = w[0] * x + w[1]
+    mse = np.mean((y - t) ** 2)
+    return mse
+
+def dmse_line(x, t, w) :
+   y = w[0] * x + w[1]
+   d_w0 = 2 * np.mean((y - t) * x)
+   d_w1 = 2 * np.mean(y - t)
+   return d_w0, d_w1
+
+def fit_line_num(x, t) :
+   w_init = [10.0, 165.0]  # 초기 매개 변수
+   alpha = 0.001  # 학습률
+   i_max = 100000 # 최대 반복수
+   eps = 0.1   # 반복을 종료 기울기의 절대값의 한계
+   w_i = np.zeros([i_max, 2])
+   w_i[0, :] = w_init
+   
+   for i in range(1, i_max) :
+      dmse = dmse_line(x, t, w_i[i - 1])
+      w_i[i, 0] = w_i[i - 1, 0] - alpha * dmse[0]
+      w_i[i, 1] = w_i[i - 1, 1] - alpha * dmse[1]
+      if max(np.absolute(dmse)) < eps : # 종료 판정, np.absolute는 절대값
+         break
+
+   w0 = w_i[i, 0]
+   w1 = w_i[i, 1]
+   w_i = w_i[:i, :]
+   return w0, w1, dmse, w_i
+
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
+
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+plt.figure(figsize = (4, 4))
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) : 
+   for i1 in range(xn) :
+      J[i1, i0] = mse_line(X, T, (x0[i0], x1[i1]))
+
+cont = plt.contour(xx0, xx1, J, 30, colors = 'black', levels = (100, 1000, 10000, 100000))
+cont.clabel(fmt = '%1.0f', fontsize = 8)
+
+plt.grid(True)
+
+W0, W1, dMSE, W_history = fit_line_num(X, T)
+
+print('반복 횟수 {0}'. format(W_history.shape[0]))
+print('W = [{0:.6f}, {1:.6f}]'. format(W0, W1))
+print('dMSE = {0:.6f}'. format(dMSE[0], dMSE[1]))
+print('MSE = {0:.6f}'. format(mse_line(X, T, [W0, W1])))
+
+plt.plot(W_history[:, 0], W_history[:, 1], '.-', color = 'gray', markersize = 10, markeredgecolor = 'cornflowerblue')
+plt.show()
+
+반복 횟수 13820
+W = [1.539947, 136.176160]
+dMSE = [-0.005794, 0.099991]
+MSE = 49.027452
+
+------------------------------------
+
+경사 하강법에 의한 직선 모델 fitting 결과
+
+'''
+
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def mse_line(x, t, w) :
+    y = w[0] * x + w[1]
+    mse = np.mean((y - t) ** 2)
+    return mse
+
+def dmse_line(x, t, w) :
+   y = w[0] * x + w[1]
+   d_w0 = 2 * np.mean((y - t) * x)
+   d_w1 = 2 * np.mean(y - t)
+   return d_w0, d_w1
+
+def fit_line_num(x, t) :
+   w_init = [10.0, 165.0]  # 초기 매개 변수
+   alpha = 0.001  # 학습률
+   i_max = 100000 # 최대 반복수
+   eps = 0.1   # 반복을 종료 기울기의 절대값의 한계
+   w_i = np.zeros([i_max, 2])
+   w_i[0, :] = w_init
+   
+   for i in range(1, i_max) :
+      dmse = dmse_line(x, t, w_i[i - 1])
+      w_i[i, 0] = w_i[i - 1, 0] - alpha * dmse[0]
+      w_i[i, 1] = w_i[i - 1, 1] - alpha * dmse[1]
+      if max(np.absolute(dmse)) < eps : # 종료 판정, np.absolute는 절대값
+         break
+
+   w0 = w_i[i, 0]
+   w1 = w_i[i, 1]
+   w_i = w_i[:i, :]
+   return w0, w1, dmse, w_i
+
+def show_line(w) :
+   xb = np.linspace(X_min, X_max, 100)
+   y = w[0] * xb + w[1]
+   plt.plot(xb, y, color = (.5, .5, .5), linewidth = 4)
+
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
+
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+plt.figure(figsize = (4, 4))
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) : 
+   for i1 in range(xn) :
+      J[i1, i0] = mse_line(X, T, (x0[i0], x1[i1]))
+
+W0, W1, dMSE, W_history = fit_line_num(X, T)
+
+plt.figure(figsize = (4, 4))
+W = np.array([W0, W1])
+mse = mse_line(X, T, W)
+print("w0 = {0:.3f}, w1 = {1:.3f}". format(W0, W1))
+print("SD = {0:.3f} cm". format(np.sqrt(mse)))
+show_line(W)
+
+plt.plot(X, T, marker = 'o', linestyle = 'None', color = 'cornflowerblue', markeredgecolor = 'black')
+plt.xlim(X_min, X_max)
+plt.grid(True)
+plt.show()
+
+
+# cont = plt.contour(xx0, xx1, J, 30, colors = 'black', levels = (100, 1000, 10000, 100000))
+# cont.clabel(fmt = '%1.0f', fontsize = 8)
+
+# plt.grid(True)
+
+# W0, W1, dMSE, W_history = fit_line_num(X, T)
+
+# print('반복 횟수 {0}'. format(W_history.shape[0]))
+# print('W = [{0:.6f}, {1:.6f}]'. format(W0, W1))
+# print('dMSE = [{0:.6f}, {1:.6f}]'. format(dMSE[0], dMSE[1]))
+# print('MSE = {0:.6f}'. format(mse_line(X, T, [W0, W1])))
+
+# plt.plot(W_history[:, 0], W_history[:, 1], '.-', color = 'gray', markersize = 10, markeredgecolor = 'cornflowerblue')
+# plt.show()
+
