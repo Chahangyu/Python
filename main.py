@@ -834,6 +834,90 @@ MSE = 49.027452
 
 경사 하강법에 의한 직선 모델 fitting 결과
 
+def mse_line(x, t, w) :
+    y = w[0] * x + w[1]
+    mse = np.mean((y - t) ** 2)
+    return mse
+
+def dmse_line(x, t, w) :
+   y = w[0] * x + w[1]
+   d_w0 = 2 * np.mean((y - t) * x)
+   d_w1 = 2 * np.mean(y - t)
+   return d_w0, d_w1
+
+def fit_line_num(x, t) :
+   w_init = [10.0, 165.0]  # 초기 매개 변수
+   alpha = 0.001  # 학습률
+   i_max = 100000 # 최대 반복수
+   eps = 0.1   # 반복을 종료 기울기의 절대값의 한계
+   w_i = np.zeros([i_max, 2])
+   w_i[0, :] = w_init
+   
+   for i in range(1, i_max) :
+      dmse = dmse_line(x, t, w_i[i - 1])
+      w_i[i, 0] = w_i[i - 1, 0] - alpha * dmse[0]
+      w_i[i, 1] = w_i[i - 1, 1] - alpha * dmse[1]
+      if max(np.absolute(dmse)) < eps : # 종료 판정, np.absolute는 절대값
+         break
+
+   w0 = w_i[i, 0]
+   w1 = w_i[i, 1]
+   w_i = w_i[:i, :]
+   return w0, w1, dmse, w_i
+
+def show_line(w) :
+   xb = np.linspace(X_min, X_max, 100)
+   y = w[0] * xb + w[1]
+   plt.plot(xb, y, color = (.5, .5, .5), linewidth = 4)
+
+np.random.seed(seed = 1)
+X_min = 4   # X의 하한
+X_max = 30  # X의 상한
+X_n = 16    # X의 상한
+X = 5 + 25 * np.random.rand(X_n)
+Prm_c = [170, 108, 0.2] # 생성 매개 변수
+T = Prm_c[0] - Prm_c[1] * np.exp(-Prm_c[2] * X) + 4 * np.random.randn(X_n)
+np.savez('ch5_data.npz', X = X, X_min = X_min, X_max = X_max, X_n = X_n, T = T)
+
+xn = 100
+w0_range = [-25, 25]
+w1_range = [120, 170]
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+x0 = np.linspace(w0_range[0], w0_range[1], xn)
+x1 = np.linspace(w1_range[0], w1_range[1], xn)
+
+xx0, xx1 = np.meshgrid(x0, x1)
+J = np.zeros((len(x0), len(x1)))
+
+for i0 in range(xn) : 
+   for i1 in range(xn) :
+      J[i1, i0] = mse_line(X, T, (x0[i0], x1[i1]))
+
+W0, W1, dMSE, W_history = fit_line_num(X, T)
+
+plt.figure(figsize = (4, 4))
+W = np.array([W0, W1])
+mse = mse_line(X, T, W)
+print("w0 = {0:.3f}, w1 = {1:.3f}". format(W0, W1))
+print("SD = {0:.3f} cm". format(np.sqrt(mse)))
+show_line(W)
+
+plt.plot(X, T, marker = 'o', linestyle = 'None', color = 'cornflowerblue', markeredgecolor = 'black')
+plt.xlim(X_min, X_max)
+plt.grid(True)
+plt.show()
+
+w0 = 1.540, w1 = 136.176
+SD = 7.002 cm
+
+------------------------------------
+
+
+
 '''
 
 import numpy as np
@@ -893,11 +977,6 @@ x1 = np.linspace(w1_range[0], w1_range[1], xn)
 xx0, xx1 = np.meshgrid(x0, x1)
 J = np.zeros((len(x0), len(x1)))
 
-plt.figure(figsize = (4, 4))
-xn = 100
-w0_range = [-25, 25]
-w1_range = [120, 170]
-
 x0 = np.linspace(w0_range[0], w0_range[1], xn)
 x1 = np.linspace(w1_range[0], w1_range[1], xn)
 
@@ -921,20 +1000,4 @@ plt.plot(X, T, marker = 'o', linestyle = 'None', color = 'cornflowerblue', marke
 plt.xlim(X_min, X_max)
 plt.grid(True)
 plt.show()
-
-
-# cont = plt.contour(xx0, xx1, J, 30, colors = 'black', levels = (100, 1000, 10000, 100000))
-# cont.clabel(fmt = '%1.0f', fontsize = 8)
-
-# plt.grid(True)
-
-# W0, W1, dMSE, W_history = fit_line_num(X, T)
-
-# print('반복 횟수 {0}'. format(W_history.shape[0]))
-# print('W = [{0:.6f}, {1:.6f}]'. format(W0, W1))
-# print('dMSE = [{0:.6f}, {1:.6f}]'. format(dMSE[0], dMSE[1]))
-# print('MSE = {0:.6f}'. format(mse_line(X, T, [W0, W1])))
-
-# plt.plot(W_history[:, 0], W_history[:, 1], '.-', color = 'gray', markersize = 10, markeredgecolor = 'cornflowerblue')
-# plt.show()
 
